@@ -51,12 +51,13 @@ Options:
   --help     Show help [boolean]
   --version  Show version number [boolean]
   --remote   Git remote, may be remote name or full URL to the repo [default: "origin"]
-  --tag      Tag name to which src will be published, for example: v1.2.3 - by default uses version from package.json
+  --tag      Tag name(s) to which src will be published, for example: v1.2.3 latest stable (if none are provided, the version from package.json will be used; see --vtag
+  --vtag     Tag with the version from package.json [boolean] [default: true if no --tag is passed, false otherwise]
   --push     Push update to the git remote (pass --no-push to disable) [boolean] [default: "true"]
   --force    Override any existing tag on the remote as well as locally (git tag -f, git push -f) [boolean]
 
 Examples:
-  publish-to-git --tag v2.1.3 --no-push     # by default version from package.json is used
+  publish-to-git --tag v2.1.3 latest --no-push     # by default version from package.json is used
   publish-to-git --remote https://USER:GITHUB_TOKEN@github.com/USER/REPO
   publish-to-git --force    # useful in CI and when we want to override the same tag which triggered the build
 ```
@@ -67,7 +68,7 @@ Examples:
 const { publish } = require('publish-to-git');
 
 const options = {
-  tag: 'v1.0.0', // you can also provide version: '1.0.0' instead of tag
+  tags: ['v1.0.0'], // you can also provide { version: '1.0.0' } instead
   push: { // set to false to not push
     remote: 'origin', // set to URL or remote name
     force: false, // set to true to force push

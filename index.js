@@ -60,9 +60,9 @@ async function packWithNpm({ sourceDir, targetDir, verbose }) {
   }
 }
 
-async function publish({tag, version, push, packOptions}, pack = packWithNpm) {
-  if (!tag) {
-    tag = `v${version}`;
+async function publish({tags, vtag, version, push, packOptions}, pack = packWithNpm) {
+  if (vtag === true || (vtag === undefined && tags.length === 0)) {
+    tags.unshift(`v${version}`);
   }
 
   const tmpRepoDir = await tmp.dirAsync();
@@ -94,20 +94,22 @@ ${currentCommitMessage}`;
 
     const forceOptions = push.force ? ['-f'] : [];
 
-    await git('tag', ...forceOptions, tag, `${temporaryRemote}/master`);
+    for (const tag of tags) {
+      await git('tag', ...forceOptions, tag, `${temporaryRemote}/master`);
+    }
 
     if (push) {
       console.warn(`Pushing to remote ${push.remote}`);
 
       try {
-        await git('push', ...forceOptions, push.remote || 'origin', tag);
+        await git('push', ...forceOptions, push.remote || 'origin', ...tags);
       } catch(err) {
-        await git('tag', '-d', tag);
+        await git('tag', '-d', ...tags);
         throw err;
       }
-      console.log(`Pushed tag to ${push.remote} with tag: ${tag}`);
+      console.log(`Pushed tag to ${push.remote} with tag(s): ${tags.join(' ')}`);
     } else {
-      console.log(`Created local tag: ${tag}`);
+      console.log(`Created local tag(s): ${tags.join(' ')}`);
     }
   } finally {
     try {
